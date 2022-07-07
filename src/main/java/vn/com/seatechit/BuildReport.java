@@ -1,13 +1,13 @@
 package vn.com.seatechit;
 
 import lombok.extern.log4j.Log4j2;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Comment;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ClassPathResource;
@@ -21,13 +21,14 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Log4j2
 public class BuildReport {
   public static void main(String[] args) throws IOException {
     try (
-        InputStream is = new ClassPathResource("templates/grouping_template.xlsx").getInputStream();
+        InputStream is = new ClassPathResource("templates/formulas_template.xlsx").getInputStream();
         OutputStream out = Files.newOutputStream(Paths.get("target/object_collection_output.xlsx"));
         XSSFWorkbook reader = new XSSFWorkbook(is);
         XSSFWorkbook writer = new XSSFWorkbook()
@@ -35,22 +36,35 @@ public class BuildReport {
       XSSFSheet writerSheet = writer.createSheet();
 
       StreamSupport
-          .stream(reader.getSheetAt(0).spliterator(), true)
-          .flatMap(row -> StreamSupport.stream(row.spliterator(), false))
-          .forEach(cell -> {
-            XSSFCell wCell = writerSheet
-                .createRow(cell.getRowIndex())
-                .createCell(cell.getColumnIndex());
-            wCell.getCellStyle().cloneStyleFrom(cell.getCellStyle());
-            if (cell.getCellType() == CellType.STRING) {
-              wCell.setCellValue(cell.getStringCellValue());
-            } else if (cell.getCellType() == CellType.NUMERIC) {
-              wCell.setCellValue(cell.getNumericCellValue());
-            } else if (cell.getCellType() == CellType.BOOLEAN) {
-              wCell.setCellValue(cell.getBooleanCellValue());
-            } else if (cell.getCellType() == CellType.FORMULA && cell.getCachedFormulaResultType() == CellType.NUMERIC) {
-              wCell.setCellValue(cell.getNumericCellValue());
-            }
+          .stream(reader.getSheetAt(0).spliterator(), false)
+          .forEach(row -> {
+            XSSFRow wRow = writerSheet.createRow(row.getRowNum());
+            StreamSupport
+                .stream(row.spliterator(), false)
+                .forEach(cell -> {
+                  XSSFCell wCell = wRow.createCell(cell.getColumnIndex());
+                  CellStyle style = writer.createCellStyle();
+                  style.cloneStyleFrom(cell.getCellStyle());
+                  wCell.setCellStyle(style);
+                  log.info("Cell type: {} {}", CellReference.convertNumToColString(cell.getColumnIndex()), row.getRowNum());
+                  log.info("Cell Note: {}", Optional.ofNullable(cell.getCellComment()).map(Comment::getString));
+                  log.info("Cell Author Note: {}", Optional.ofNullable(cell.getCellComment()).map(Comment::getAuthor));
+                  if (cell.getCellType() == CellType.STRING) {
+                    wCell.setCellValue(cell.getStringCellValue());
+                  } else if (cell.getCellType() == CellType.NUMERIC) {
+                    wCell.setCellValue(cell.getNumericCellValue());
+                  } else if (cell.getCellType() == CellType.BOOLEAN) {
+                    wCell.setCellValue(cell.getBooleanCellValue());
+                  } else if (
+                      cell.getCellType() == CellType.FORMULA && cell.getCachedFormulaResultType() == CellType.NUMERIC
+                  ) {
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                      wCell.setCellValue(cell.getLocalDateTimeCellValue());
+                    } else {
+                      wCell.setCellValue(cell.getNumericCellValue());
+                    }
+                  }
+                });
           });
       writer.write(out);
     }
