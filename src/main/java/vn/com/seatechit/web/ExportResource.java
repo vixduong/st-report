@@ -1,6 +1,11 @@
 package vn.com.seatechit.web;
 
-import lombok.extern.log4j.Log4j2;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -11,16 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import vn.com.seatechit.config.ResourceConfiguration;
 import vn.com.seatechit.utilies.JxlsHelperUtility;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.UUID;
-
-@Log4j2
 @RestController
 @RequestMapping("/api/export")
 public class ExportResource {
@@ -29,6 +28,7 @@ public class ExportResource {
   public ExportResource(ResourceConfiguration resourceConfiguration) {
     this.resourceConfiguration = resourceConfiguration;
   }
+
   @PostMapping
   public HttpEntity<Resource> export(
       String templateName,
