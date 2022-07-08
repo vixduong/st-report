@@ -43,7 +43,6 @@ public class ExportResource {
   @PostMapping("/search-folder")
   @Operation(summary = "Download WH ECM Documents")
   public ResponseEntity<Resource> searchFolder(
-      String fileName,
       @RequestBody
       SearchingFolderResult result
   ) throws IOException {
@@ -56,6 +55,6 @@ public class ExportResource {
     context.putVar("fromDate", Objects.nonNull(result.getFromDate()) ? fmt.format(result.getFromDate()) : "");
     context.putVar("toDate", Objects.nonNull(result.getToDate()) ? fmt.format(result.getToDate()) : "");
     context.putVar("items", result.getItems());
-    return webService.toResource(SEARCHING_FOLDER_RESULT_XLS, fileName, context);
+    return webService.toResource(SEARCHING_FOLDER_RESULT_XLS, result.getFileName(), context);
   }
 }

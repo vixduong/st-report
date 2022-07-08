@@ -12,13 +12,16 @@ import vn.com.seatechit.config.ResourceConfiguration;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Log4j2
 @SpringBootApplication
 @EnableConfigurationProperties({ResourceConfiguration.class})
 public class StReportApplication  extends SpringBootServletInitializer {
-
+  private static final String SPRING_PROFILE_DEFAULT = "spring.profiles.default";
+  private static final String SPRING_PROFILE_PRODUCT = "prod";
   public static void main(String[] args) {
     SpringApplication app = new SpringApplication(StReportApplication.class);
     Environment env = app.run(args).getEnvironment();
@@ -27,6 +30,14 @@ public class StReportApplication  extends SpringBootServletInitializer {
 
   @Override
   protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+    Map<String, Object> defProperties = new HashMap<>();
+    /*
+     * The default profile to use when no other profiles are defined
+     * This cannot be set in the application.yml file.
+     * See https://github.com/spring-projects/spring-boot/issues/1219
+     */
+    defProperties.put(SPRING_PROFILE_DEFAULT, SPRING_PROFILE_PRODUCT);
+    application.application().setDefaultProperties(defProperties);
     return application.sources(StReportApplication.class);
   }
 
