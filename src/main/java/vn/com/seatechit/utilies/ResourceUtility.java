@@ -26,12 +26,8 @@ public class ResourceUtility {
     return getInputStream(getPath(path));
   }
 
-  public static Optional<InputStream> getInputStreamFromClassPath(String path) {
-    try {
-      return Optional.of(new ClassPathResource(path).getInputStream());
-    } catch (IOException ignored) {
-    }
-    return Optional.empty();
+  public static InputStream getInputStreamFromClassPath(String path) throws IOException {
+    return new ClassPathResource(path).getInputStream();
   }
 
   public static Optional<Path> createDirection(Path path) {

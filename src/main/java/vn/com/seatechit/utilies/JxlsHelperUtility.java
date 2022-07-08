@@ -47,4 +47,15 @@ public class JxlsHelperUtility {
       }
     }
   }
+
+  public static void report_(
+      String templateClassPath,
+      String outputPath,
+      Context context) throws IOException {
+    try (InputStream is = ResourceUtility.getInputStreamFromClassPath(templateClassPath)) {
+      try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
+        JxlsHelper.getInstance().processTemplate(is, os, context);
+      }
+    }
+  }
 }
