@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import vn.com.seatechit.config.ResourceConfiguration;
+import vn.com.seatechit.domain.Base64Content;
 import vn.com.seatechit.util.JxlsHelperUtil;
 import vn.com.seatechit.util.ResourceUtil;
 
@@ -60,6 +61,21 @@ public class WebService {
     String body = ResourceUtil.inputStreamToString(resource.getInputStream());
 
     return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(body);
+  }
+
+  public ResponseEntity<Base64Content> toBase64Content(String excelTemplate, Context context) throws IOException {
+    String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
+    String outputPath = ResourceUtil
+        .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
+        .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
+
+    log.info("Template path: {}", templatePath);
+    log.info("Output path: {}", outputPath);
+    JxlsHelperUtil.report_(templatePath, outputPath, context);
+    InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
+    String body = ResourceUtil.inputStreamToString(resource.getInputStream());
+
+    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new Base64Content(body));
   }
 
 }

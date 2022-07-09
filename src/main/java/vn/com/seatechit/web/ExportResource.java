@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import vn.com.seatechit.domain.Base64Content;
 import vn.com.seatechit.domain.SearchingFolderResult;
 import vn.com.seatechit.service.SearchFolderService;
 import vn.com.seatechit.service.WebService;
@@ -40,11 +41,11 @@ public class ExportResource {
   }
 
   @PostMapping("/search-folder/base64")
-  @Operation(summary = "Download WH ECM Documents as base 64")
-  public ResponseEntity<String> searchFolder_(
+  @Operation(summary = "Download WH ECM Documents as base 64 content")
+  public ResponseEntity<Base64Content> searchFolder_(
       @RequestBody @Validated
       SearchingFolderResult result
   ) throws IOException {
-    return webService.toString(SEARCHING_FOLDER_RESULT_XLS, searchFolderService.toContext(result));
+    return webService.toBase64Content(SEARCHING_FOLDER_RESULT_XLS, searchFolderService.toContext(result));
   }
 }
