@@ -1,4 +1,4 @@
-package vn.com.seatechit.utilies;
+package vn.com.seatechit.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,15 +14,15 @@ import org.jxls.util.JxlsHelper;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class JxlsHelperUtility {
-  private JxlsHelperUtility() {
+public class JxlsHelperUtil {
+  private JxlsHelperUtil() {
   }
 
   public static void report(
       String templatePath,
       String outputPath,
       Map<String, Object> data) {
-    try (InputStream is = ResourceUtility.getInputStream(templatePath)) {
+    try (InputStream is = ResourceUtil.getInputStream(templatePath)) {
       try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
         Context context = new Context();
         if (Objects.nonNull(data)) {
@@ -41,7 +41,7 @@ public class JxlsHelperUtility {
       String templatePath,
       String outputPath,
       Context context) throws IOException {
-    try (InputStream is = ResourceUtility.getInputStream(templatePath)) {
+    try (InputStream is = ResourceUtil.getInputStream(templatePath)) {
       try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
         JxlsHelper.getInstance().processTemplate(is, os, context);
       }
@@ -52,7 +52,7 @@ public class JxlsHelperUtility {
       String templateClassPath,
       String outputPath,
       Context context) throws IOException {
-    try (InputStream is = ResourceUtility.getInputStreamFromClassPath(templateClassPath)) {
+    try (InputStream is = ResourceUtil.getInputStreamFromClassPath(templateClassPath)) {
       try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
         JxlsHelper.getInstance().processTemplate(is, os, context);
       }

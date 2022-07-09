@@ -9,8 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import vn.com.seatechit.config.ResourceConfiguration;
-import vn.com.seatechit.utilies.JxlsHelperUtility;
-import vn.com.seatechit.utilies.ResourceUtility;
+import vn.com.seatechit.util.JxlsHelperUtil;
+import vn.com.seatechit.util.ResourceUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,13 +32,13 @@ public class WebService {
       Context context
   ) throws IOException {
     String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
-    String outputPath = ResourceUtility
+    String outputPath = ResourceUtil
         .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
         .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
 
     log.info("Template path: {}", templatePath);
     log.info("Output path: {}", outputPath);
-    JxlsHelperUtility.report_(templatePath, outputPath, context);
+    JxlsHelperUtil.report_(templatePath, outputPath, context);
     InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
 
     return ResponseEntity.ok()
@@ -46,4 +46,20 @@ public class WebService {
         .contentType(MediaType.parseMediaType("application/octet-stream"))
         .body(resource);
   }
+
+  public ResponseEntity<String> toString(String excelTemplate, Context context) throws IOException {
+    String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
+    String outputPath = ResourceUtil
+        .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
+        .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
+
+    log.info("Template path: {}", templatePath);
+    log.info("Output path: {}", outputPath);
+    JxlsHelperUtil.report_(templatePath, outputPath, context);
+    InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
+    String body = ResourceUtil.inputStreamToString(resource.getInputStream());
+
+    return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(body);
+  }
+
 }
