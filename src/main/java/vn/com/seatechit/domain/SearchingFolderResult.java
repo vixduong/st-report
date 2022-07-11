@@ -1,10 +1,12 @@
 package vn.com.seatechit.domain;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,8 +21,8 @@ public class SearchingFolderResult {
     private String day;
     private String month;
     private String year;
-    private LocalDateTime fromDate;
-    private LocalDateTime toDate;
+    private String fromDate;
+    private String toDate;
 
     private List<SearchingFolderResultItem> items;
 }
