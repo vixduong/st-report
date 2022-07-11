@@ -48,6 +48,12 @@ public class ResourceUtil {
         .flatMap(ResourceUtil::createDirection);
   }
 
+  public static Optional<Path> getDirectionFromYearAndMonthOfPass(String path) {
+    return Optional
+        .of(LocalDateTime.now().plusMonths(-1))
+        .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getDayOfMonth()));
+  }
+
   public static Optional<Path> createDirectionFromYearAndMonth(Path path) {
     return Optional
         .of(LocalDateTime.now())

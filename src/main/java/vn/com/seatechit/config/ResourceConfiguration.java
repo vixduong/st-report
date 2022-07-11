@@ -11,4 +11,6 @@ public class ResourceConfiguration {
 
   private String templateClassPath;
   private String outputClassPath;
+
+  private String removeDirectoryCron;
 }
