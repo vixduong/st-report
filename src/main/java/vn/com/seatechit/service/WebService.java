@@ -27,55 +27,32 @@ public class WebService {
     this.resourceConfiguration = resourceConfiguration;
   }
 
-  public ResponseEntity<Resource> toResource(
-      String excelTemplate,
-      String fileName,
-      Context context
-  ) throws IOException {
-    String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
-    String outputPath = ResourceUtil
-        .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
-        .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
-
-    log.info("Template path: {}", templatePath);
-    log.info("Output path: {}", outputPath);
-    JxlsHelperUtil.report_(templatePath, outputPath, context);
-    InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
-
+  public ResponseEntity<Resource> toResource( String excelTemplate, String fileName, Context context) throws IOException {
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName + ".xlsx")
         .contentType(MediaType.parseMediaType("application/octet-stream"))
-        .body(resource);
-  }
-
-  public ResponseEntity<String> toString(String excelTemplate, Context context) throws IOException {
-    String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
-    String outputPath = ResourceUtil
-        .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
-        .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
-
-    log.info("Template path: {}", templatePath);
-    log.info("Output path: {}", outputPath);
-    JxlsHelperUtil.report_(templatePath, outputPath, context);
-    InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
-    String body = ResourceUtil.inputStreamToString(resource.getInputStream());
-
-    return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(body);
+        .body(getResource(excelTemplate, context));
   }
 
   public ResponseEntity<Base64Content> toBase64Content(String excelTemplate, Context context) throws IOException {
-    String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
+    return ResponseEntity
+        .ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(new Base64Content(
+            ResourceUtil.inputStreamToString(getResource(excelTemplate, context).getInputStream())
+        ));
+  }
+
+  private InputStreamResource getResource(String excelTemplate, Context context) throws IOException {
+    String templatePath = resourceConfiguration.getTemplatePath() + "\\" + excelTemplate;
     String outputPath = ResourceUtil
         .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
         .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
 
-    log.info("Template path: {}", templatePath);
-    log.info("Output path: {}", outputPath);
-    JxlsHelperUtil.report_(templatePath, outputPath, context);
-    InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
-    String body = ResourceUtil.inputStreamToString(resource.getInputStream());
+    log.debug("Template path: {}", templatePath);
+    log.debug("Output path: {}", outputPath);
+    JxlsHelperUtil.report(templatePath, outputPath, context);
 
-    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new Base64Content(body));
+    return new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
   }
-
 }

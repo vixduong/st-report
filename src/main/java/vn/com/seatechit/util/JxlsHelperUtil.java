@@ -21,25 +21,6 @@ public class JxlsHelperUtil {
   public static void report(
       String templatePath,
       String outputPath,
-      Map<String, Object> data) {
-    try (InputStream is = ResourceUtil.getInputStream(templatePath)) {
-      try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
-        Context context = new Context();
-        if (Objects.nonNull(data)) {
-          data.forEach(context::putVar);
-        }
-        JxlsHelper.getInstance().processTemplate(is, os, context);
-      } catch (IOException e) {
-        log.error(e);
-      }
-    } catch (IOException e) {
-      log.error(e);
-    }
-  }
-
-  public static void report(
-      String templatePath,
-      String outputPath,
       Context context) throws IOException {
     try (InputStream is = ResourceUtil.getInputStream(templatePath)) {
       try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
