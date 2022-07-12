@@ -1,21 +1,21 @@
 package vn.com.seatechit.util;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.Optional;
 
+@UtilityClass
 public class ResourceUtil {
   public static final int DEFAULT_BUFFER_SIZE = 8192;
-  private ResourceUtil() {
-  }
 
   public static Path getPath(String path) {
     return Paths.get(path).toAbsolutePath();
@@ -61,12 +61,20 @@ public class ResourceUtil {
         .flatMap(ResourceUtil::createDirection);
   }
 
-  public static Optional<Boolean> deleteDirection(Path path) {
-    try {
-      return Optional.of(Files.deleteIfExists(path));
-    } catch (IOException ignored) {
-    }
-    return Optional.empty();
+  public static void deleteDirection(Path path) throws IOException {
+    Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        Files.delete(dir);
+        return FileVisitResult.CONTINUE;
+      }
+    });
   }
 
   public static String inputStreamToString(InputStream is) throws IOException {

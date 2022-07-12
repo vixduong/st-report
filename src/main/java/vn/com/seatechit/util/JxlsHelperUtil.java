@@ -8,16 +8,15 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
+import lombok.experimental.UtilityClass;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@UtilityClass
 public class JxlsHelperUtil {
-  private JxlsHelperUtil() {
-  }
-
   public static void report(
       String templatePath,
       String outputPath,
