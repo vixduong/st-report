@@ -17,7 +17,7 @@ public class FileSchedule {
   @Value("${st.resource.output-path}")
   private String outputExcelPath;
 
-  @Scheduled(cron = "${st.resource.removeDirectoryCron}")
+  /*@Scheduled(cron = "${st.resource.removeDirectoryCron}")
   public void removeFiles() {
     log.info("Remove files");
     ResourceUtil
@@ -30,5 +30,5 @@ public class FileSchedule {
             throw new RuntimeException(e);
           }
         });
-  }
+  }*/
 }

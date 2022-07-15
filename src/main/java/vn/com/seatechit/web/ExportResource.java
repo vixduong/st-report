@@ -10,9 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.com.seatechit.domain.Base64Content;
+import vn.com.seatechit.domain.SearchingMTK;
 import vn.com.seatechit.domain.SearchingFolderResult;
 import vn.com.seatechit.service.SearchFolderService;
+import vn.com.seatechit.service.SearchingServiceMTK;
 import vn.com.seatechit.service.WebService;
+
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -23,12 +26,15 @@ import java.io.IOException;
 @Tag(name = "Export", description = "Download a excel file")
 public class ExportResource {
   final static String SEARCHING_FOLDER_RESULT_XLS = "RP_Searching_Folder_Result.xlsx";
+  final static String SEARCHING_MTK = "RP_DanhSachMoTaiKhoan.xlsx";
   final WebService webService;
   final SearchFolderService searchFolderService;
+  final SearchingServiceMTK searchingServiceMTK;
 
-  public ExportResource(WebService webService, SearchFolderService searchFolderService) {
+  public ExportResource(WebService webService, SearchFolderService searchFolderService, SearchingServiceMTK searchingServiceMTK) {
     this.webService = webService;
     this.searchFolderService = searchFolderService;
+    this.searchingServiceMTK = searchingServiceMTK;
   }
 
   @PostMapping("/search-folder")
@@ -50,4 +56,23 @@ public class ExportResource {
   ) throws IOException {
     return webService.toBase64Content(SEARCHING_FOLDER_RESULT_XLS, searchFolderService.toContext(result));
   }
+
+
+  /*start export MTK - cuongnp*/
+  @PostMapping("/mtk")
+  @Operation(summary = "Download OA Open Account list Documents")
+  public ResponseEntity<Resource> exportMTK(
+      @Valid @RequestBody SearchingMTK mtk
+  ) throws IOException {
+    return webService.toResource(SEARCHING_MTK, mtk.getFileName(), searchingServiceMTK.toContext(mtk));
+  }
+
+  @PostMapping("/mtk/base64")
+  @Operation(summary = "Download OA Open Account list Documents as base 64 content")
+  public ResponseEntity<Base64Content> exportMTK_(
+      @Valid @RequestBody SearchingMTK mtk
+  ) throws IOException {
+    return webService.toBase64Content(SEARCHING_MTK, searchingServiceMTK.toContext(mtk));
+  }
+  /*end export MTK - cuongnp*/
 }
