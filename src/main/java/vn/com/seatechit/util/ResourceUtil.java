@@ -43,20 +43,20 @@ public class ResourceUtil {
   public static Optional<Path> createDirectionFromYearAndMonth(String path) {
     return Optional
         .of(LocalDateTime.now())
-        .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getDayOfMonth()))
+        .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getMonthValue()))
         .flatMap(ResourceUtil::createDirection);
   }
 
   public static Optional<Path> getDirectionFromYearAndMonthOfPass(String path) {
     return Optional
         .of(LocalDateTime.now().plusMonths(-1))
-        .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getDayOfMonth()));
+        .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getMonthValue()));
   }
 
   public static Optional<Path> createDirectionFromYearAndMonth(Path path) {
     return Optional
         .of(LocalDateTime.now())
-        .map(now -> getPath(path.toString() + "\\" + now.getYear() + "\\" + now.getDayOfMonth()))
+        .map(now -> getPath(path.toString() + "\\" + now.getYear() + "\\" + now.getMonthValue()))
         .flatMap(ResourceUtil::createDirection);
   }
 
