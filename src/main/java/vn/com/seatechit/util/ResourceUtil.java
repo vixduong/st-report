@@ -1,5 +1,6 @@
 package vn.com.seatechit.util;
 
+import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import org.springframework.core.io.ClassPathResource;
 
@@ -20,44 +21,27 @@ public class ResourceUtil {
     return Paths.get(path).toAbsolutePath();
   }
 
-  public static InputStream getInputStream(Path path) throws IOException {
-    return Files.newInputStream(path);
+  public static Try<InputStream> getInputStream(Path path){
+    return Try.of(() -> Files.newInputStream(path));
   }
 
-  public static InputStream getInputStream(String path) throws IOException {
-    return getInputStream(getPath(path));
+  public static Try<InputStream> getInputStreamFromClassPath(String path) {
+    return Try.of(() -> new ClassPathResource(path).getInputStream());
   }
 
-  public static InputStream getInputStreamFromClassPath(String path) throws IOException {
-    return new ClassPathResource(path).getInputStream();
+  public static Try<Path> createDirection(Path path) {
+    return Try.of(() -> Files.createDirectories(path).toAbsolutePath());
   }
 
-  public static Optional<Path> createDirection(Path path) {
-    try {
-      return Optional.of(Files.createDirectories(path).toAbsolutePath());
-    } catch (IOException ignored) {
-    }
-    return Optional.empty();
-  }
-
-  public static Optional<Path> createDirectionFromYearAndMonth(String path) {
-    return Optional
-        .of(LocalDateTime.now())
+  public static Try<Path> createDirectionFromYearAndMonth(String path) {
+    return Try.success(LocalDateTime.now())
         .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getMonthValue()))
         .flatMap(ResourceUtil::createDirection);
   }
 
-  public static Optional<Path> getDirectionFromYearAndMonthOfPass(String path) {
-    return Optional
-        .of(LocalDateTime.now().plusMonths(-1))
-        .map(now -> getPath(path + "/" + now.getYear() + "/" + now.getMonthValue()));
-  }
-
-  public static Optional<Path> createDirectionFromYearAndMonth(Path path) {
-    return Optional
-        .of(LocalDateTime.now())
-        .map(now -> getPath(path.toString() + "\\" + now.getYear() + "\\" + now.getMonthValue()))
-        .flatMap(ResourceUtil::createDirection);
+  public static Path getDirectionFromYearAndMonthOfPass(String path) {
+    LocalDateTime passMonth = LocalDateTime.now().minusMonths(1);
+    return getPath(path + "/" + passMonth.getYear() + "/" + passMonth.getMonthValue());
   }
 
   public static void deleteDirection(Path path) throws IOException {
@@ -76,14 +60,15 @@ public class ResourceUtil {
     });
   }
 
-  public static String inputStreamToString(InputStream is) throws IOException {
-    ByteArrayOutputStream result = new ByteArrayOutputStream();
-    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-    int length;
-    while ((length = is.read(buffer)) != -1) {
-      result.write(buffer, 0, length);
-    }
-
-    return Base64.getEncoder().encodeToString(result.toByteArray());
+  public static Try<String> inputStreamToString(InputStream is) {
+    return Try.of(() -> {
+      ByteArrayOutputStream result = new ByteArrayOutputStream();
+      byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+      int length;
+      while ((length = is.read(buffer)) != -1) {
+        result.write(buffer, 0, length);
+      }
+      return result;
+    }).map(bytes -> Base64.getEncoder().encodeToString(bytes.toByteArray()));
   }
 }

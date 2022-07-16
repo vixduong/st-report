@@ -1,60 +1,34 @@
 package vn.com.seatechit.util;
 
-import java.io.IOException;
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
+import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
+import org.jxls.common.Context;
+import org.jxls.util.JxlsHelper;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Objects;
-
-import lombok.experimental.UtilityClass;
-import org.jxls.common.Context;
-import org.jxls.util.JxlsHelper;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @UtilityClass
 public class JxlsHelperUtil {
-  public static void report(
-      String templatePath,
-      String outputPath,
-      Map<String, Object> data) {
-    try (InputStream is = ResourceUtil.getInputStream(templatePath)) {
-      try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
-        Context context = new Context();
-        if (Objects.nonNull(data)) {
-          data.forEach(context::putVar);
-        }
-        JxlsHelper.getInstance().processTemplate(is, os, context);
-      } catch (IOException e) {
-        log.error(e);
-      }
-    } catch (IOException e) {
-      log.error(e);
-    }
-  }
 
-  public static void report(
-      String templatePath,
-      String outputPath,
-      Context context) throws IOException {
-    try (InputStream is = ResourceUtil.getInputStream(templatePath)) {
-      try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
-        JxlsHelper.getInstance().processTemplate(is, os, context);
-      }
-    }
-  }
-
-  public static void report_(
+  public static Try<JxlsHelper> report_(
       String templateClassPath,
       String outputPath,
-      Context context) throws IOException {
-    try (InputStream is = ResourceUtil.getInputStreamFromClassPath(templateClassPath)) {
-      try (OutputStream os = Files.newOutputStream(Paths.get(outputPath))) {
-        JxlsHelper.getInstance().processTemplate(is, os, context);
-      }
-    }
+      Context context) {
+    Try<InputStream> isMaybe = ResourceUtil.getInputStreamFromClassPath(templateClassPath);
+    Try<OutputStream> osMaybe = Try.of(() -> Files.newOutputStream(Paths.get(outputPath)));
+    return isMaybe
+        .flatMap(is -> osMaybe.map(os -> new Tuple2<>(is, os)))
+        .flatMapTry(it -> Try.of(() -> JxlsHelper.getInstance().processTemplate(it._1, it._2, context)))
+        .onFailure(log::error)
+        .andFinallyTry(() -> {
+          isMaybe.get().close();
+          osMaybe.get().close();
+        });
   }
 }

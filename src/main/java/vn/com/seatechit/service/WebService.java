@@ -1,5 +1,6 @@
 package vn.com.seatechit.service;
 
+import io.vavr.control.Try;
 import lombok.extern.log4j.Log4j2;
 import org.jxls.common.Context;
 import org.springframework.core.io.InputStreamResource;
@@ -15,6 +16,7 @@ import vn.com.seatechit.util.ResourceUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -78,4 +80,24 @@ public class WebService {
     return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new Base64Content(body));
   }
 
+  private void createResource(String excelTemplate, String fileName, Context context) throws IOException {
+    ResourceUtil
+        .createDirectionFromYearAndMonth(resourceConfiguration.getOutputPath())
+        .onSuccess(path -> log.info("Output path: {}", path))
+        .flatMap(outputPath -> {
+          String templatePath = String.join("\\", resourceConfiguration.getTemplateClassPath(), excelTemplate);
+          log.info("Template path: {}", templatePath);
+          return JxlsHelperUtil.report_(templatePath, outputPath.toString(), context);
+        })
+        .getOrElseThrow(() -> new RuntimeException("Output path not found"));
+
+    String templatePath = resourceConfiguration.getTemplateClassPath() + "\\" + excelTemplate;
+    String outputPath = outputPath
+        .orElseThrow(() -> new RuntimeException("Output path not found")) + "/" + UUID.randomUUID() + ".xlsx";
+
+    log.info("Template path: {}", templatePath);
+    log.info("Output path: {}", outputPath);
+    JxlsHelperUtil.report_(templatePath, outputPath, context);
+    InputStreamResource resource = new InputStreamResource(Files.newInputStream(Paths.get(outputPath)));
+  }
 }
