@@ -1,6 +1,6 @@
 package vn.com.seatechit.util;
 
-import io.vavr.Tuple2;
+import io.vavr.API;
 import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
@@ -21,10 +21,10 @@ public class JxlsHelperUtil {
       String outputPath,
       Context context) {
     Try<InputStream> isMaybe = ResourceUtil.getInputStreamFromClassPath(templateClassPath);
-    Try<OutputStream> osMaybe = Try.of(() -> Files.newOutputStream(Paths.get(outputPath)));
+    Try<OutputStream> osMaybe = API.Try(() -> Files.newOutputStream(Paths.get(outputPath)));
     return isMaybe
-        .flatMap(is -> osMaybe.map(os -> new Tuple2<>(is, os)))
-        .flatMapTry(it -> Try.of(() -> JxlsHelper.getInstance().processTemplate(it._1, it._2, context)))
+        .flatMap(is -> osMaybe.map(os -> API.Tuple(is, os)))
+        .flatMapTry(it -> API.Try(() -> JxlsHelper.getInstance().processTemplate(it._1, it._2, context)))
         .onFailure(log::error)
         .andFinallyTry(() -> {
           isMaybe.get().close();
